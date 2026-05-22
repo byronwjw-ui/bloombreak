@@ -6,7 +6,6 @@ import GameShell from '@/components/GameShell';
 import LevelHeader from '@/components/LevelHeader';
 import GoalPanel, { type GoalView } from '@/components/GoalPanel';
 import ResultModal from '@/components/ResultModal';
-import SoftButton from '@/components/SoftButton';
 import TrayCardChip from '@/components/chips/TrayCardChip';
 import FeedbackToast, { makeToast, type ToastItem } from '@/components/FeedbackToast';
 import LevelStrip from '@/components/LevelStrip';
@@ -23,7 +22,7 @@ import {
   undo,
   type TrayState,
 } from '@/lib/trayEngine2';
-import type { GameStatus, TrayCard, TrayCardType } from '@/types/game';
+import type { GameStatus, TrayCard } from '@/types/game';
 
 function TrayInner() {
   const router = useRouter();
@@ -83,7 +82,6 @@ function TrayInner() {
     if (finishedRef.current) return;
     finishedRef.current = true;
     const score = clearedGroups * 120 + Math.max(0, traySize - state.tray.length) * 60;
-    // stars: based on remaining items used (more items left = more stars)
     const itemsLeft = items.undo + items.shuffle + items.hint;
     const stars = itemsLeft >= 3 ? 3 : itemsLeft >= 2 ? 2 : 1;
     setResultStars(stars);
@@ -111,8 +109,7 @@ function TrayInner() {
     const result = pickCard(state, card.id, traySize);
     setState(result.state);
     if (result.clearedGroup) {
-      const next = clearedGroups + 1;
-      setClearedGroups(next);
+      setClearedGroups((g) => g + 1);
       setPressureCleared((p) => p + 3);
       setFlashing(true);
       setTimeout(() => setFlashing(false), 460);
@@ -130,13 +127,14 @@ function TrayInner() {
       warnShownRef.current = true;
       pushToast(trayWarn, 'warn');
     }
-  }, [state, status, traySize, clearedGroups, pushToast, finishWin, finishLose]);
+  }, [state, status, traySize, pushToast, finishWin, finishLose]);
 
   const useUndo = () => {
     if (items.undo <= 0 || state.history.length === 0) return;
+    const last = state.history[state.history.length - 1];
     setState(undo(state));
     setItems((it) => ({ ...it, undo: it.undo - 1 }));
-    setClearedGroups((g) => Math.max(0, g - (state.history[state.history.length - 1].clearedType ? 1 : 0)));
+    if (last.clearedType) setClearedGroups((g) => Math.max(0, g - 1));
   };
   const useShuffle = () => {
     if (items.shuffle <= 0) return;
@@ -176,7 +174,7 @@ function TrayInner() {
         rightMetric={{ label: '剩余', value: remaining }}
         bottomRow={
           <div className="flex items-center gap-4">
-            <span>已归档 <b className="text-[#F9C74F]">{clearedGroups}</b> 组</span>
+            <span>已归档 <b className="text-[#E8AE5A]">{clearedGroups}</b> 组</span>
             <span className="text-[#9C9CB0]">托盘 {state.tray.length}/{traySize}</span>
           </div>
         }
@@ -184,29 +182,39 @@ function TrayInner() {
 
       <GoalPanel goals={goalViews} tip={level.tip} />
 
+      {/* desk surface */}
       <div
-        className="relative rounded-3xl bg-gradient-to-b from-white/85 to-white/60 backdrop-blur shadow-[0_10px_28px_rgba(48,48,68,0.08)] mx-auto overflow-hidden"
-        style={{ width: 'min(94vw, 432px)', height: 'min(94vw, 432px)' }}
+        className="relative rounded-3xl mx-auto overflow-hidden shadow-[0_12px_28px_rgba(120,90,40,0.16)] tray-texture"
+        style={{
+          width: 'min(94vw, 432px)',
+          height: 'min(94vw, 432px)',
+          background:
+            'radial-gradient(110% 70% at 50% 0%, #FFF3D9 0%, #FAE0AF 70%, #F3CC81 100%)',
+        }}
       >
-        {/* desk grain decoration */}
-        <div className="absolute inset-0 pointer-events-none opacity-30" style={{
-          backgroundImage:
-            'repeating-linear-gradient(0deg, rgba(48,48,68,0.04) 0 1px, transparent 1px 30px), repeating-linear-gradient(90deg, rgba(48,48,68,0.04) 0 1px, transparent 1px 30px)',
+        {/* faux desk lines */}
+        <div className="absolute inset-0 pointer-events-none opacity-25" style={{
+          backgroundImage: 'repeating-linear-gradient(90deg, rgba(120,90,40,0.20) 0 1px, transparent 1px 36px)'
         }} />
+        {/* cards */}
         {state.remainingCards.map((card) => {
           const clickable = isCardClickable(card, state);
           return (
             <div
               key={card.id}
-              onClick={() => clickable && handlePick(card)}
+              onPointerDown={(e) => {
+                if (!clickable) return;
+                e.preventDefault();
+                handlePick(card);
+              }}
               style={{
                 left: `${card.x}%`,
                 top: `${card.y}%`,
                 zIndex: card.layer + 1,
                 position: 'absolute',
-                transform: 'translate(-50%, -50%)',
-                width: '15%',
-                height: '15%',
+                transform: `translate(-50%, -50%) rotate(${(card.layer % 2 === 0 ? -1 : 1) * (1 + card.layer)}deg)`,
+                width: '17%',
+                height: '17%',
               }}
               className="touch-manipulation"
             >
@@ -214,7 +222,6 @@ function TrayInner() {
                 type={card.type}
                 locked={!clickable}
                 hint={hintId === card.id}
-                onClick={() => clickable && handlePick(card)}
               />
             </div>
           );
@@ -228,16 +235,17 @@ function TrayInner() {
         <ItemButton label="提示" count={items.hint} onClick={useHint} icon="?" />
       </div>
 
+      {/* tray */}
       <div
         className={[
-          'w-full rounded-2xl bg-white/85 backdrop-blur px-3 py-2 shadow-[0_6px_18px_rgba(48,48,68,0.08)]',
+          'w-full rounded-2xl bg-white/90 backdrop-blur px-3 py-2 shadow-[0_8px_18px_rgba(48,48,68,0.10)]',
           flashing ? 'animate-tray-flash' : '',
           trayAlert ? 'ring-2 ring-[#FCA5A5] animate-warn-pulse' : '',
         ].join(' ')}
       >
         <div className="flex items-center justify-between mb-1.5 px-1">
-          <div className="text-xs text-[#9C9CB0]">压力托盘</div>
-          <div className="text-[10px] text-[#b0b0c0]">三个相同自动归档</div>
+          <div className="text-xs text-[#6B6B82] font-semibold">压力托盘</div>
+          <div className="text-[10px] text-[#9C9CB0]">三个相同自动归档</div>
         </div>
         <div className="grid grid-cols-7 gap-1.5">
           {traySlots.map((card, i) => (
@@ -245,7 +253,7 @@ function TrayInner() {
               key={i}
               className={[
                 'aspect-square rounded-xl flex items-center justify-center',
-                card ? 'animate-tile-appear' : 'bg-[#FBF7FD] ring-1 ring-dashed ring-[#e5dceb]',
+                card ? 'animate-tile-appear' : 'bg-[#FBF4E0] ring-1 ring-dashed ring-[#E2C593]',
               ].join(' ')}
             >
               {card && <TrayCardChip type={card.type} small />}
@@ -274,7 +282,7 @@ function TrayInner() {
         />
       )}
 
-      <span className="hidden">{TRAY_LEVELS_V2.length}<SoftButton>x</SoftButton></span>
+      <span className="hidden">{TRAY_LEVELS_V2.length}</span>
     </GameShell>
   );
 }
@@ -292,7 +300,7 @@ function ItemButton({ label, count, onClick, icon }: { label: string; count: num
     >
       <span className="text-base">{icon}</span>
       <span>{label}</span>
-      <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${disabled ? 'bg-[#E5E1EA] text-[#9C9CB0]' : 'bg-[#FFE0EC] text-[#a84968]'}`}>×{count}</span>
+      <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${disabled ? 'bg-[#E5E1EA] text-[#9C9CB0]' : 'bg-[#FFE8C7] text-[#7a5418]'}`}>×{count}</span>
     </button>
   );
 }
