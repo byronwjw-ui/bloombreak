@@ -21,18 +21,8 @@ type Props = {
 };
 
 export default function ResultModal({
-  kind,
-  score,
-  pressureCleared,
-  bloomCount,
-  reward,
-  message,
-  easterEgg,
-  hasNextLevel,
-  onNext,
-  onRetry,
-  onGarden,
-  onHome,
+  kind, score, pressureCleared, bloomCount, reward, message, easterEgg,
+  hasNextLevel, onNext, onRetry, onGarden, onHome,
 }: Props) {
   const won = kind === 'won';
   return (
@@ -43,22 +33,16 @@ export default function ResultModal({
           <h2 className="text-xl font-bold text-[#3A3A4A]">
             {won ? '今天的压力清掉一部分啦' : '压力有点满了'}
           </h2>
-          <p className="mt-2 text-sm text-[#6b6b7e] whitespace-pre-line leading-relaxed">
-            {message}
-          </p>
+          <p className="mt-2 text-sm text-[#6b6b7e] whitespace-pre-line leading-relaxed">{message}</p>
           {easterEgg && (
-            <p className="mt-3 text-xs text-[#9b87a8] whitespace-pre-line bg-[#FBF5FF] rounded-2xl p-3">
-              {easterEgg}
-            </p>
+            <p className="mt-3 text-xs text-[#9b87a8] whitespace-pre-line bg-[#FBF5FF] rounded-2xl p-3">{easterEgg}</p>
           )}
         </div>
-
         <div className="my-4 grid grid-cols-3 gap-2 text-center">
           <Stat label="分数" value={score} />
           <Stat label="清压力" value={pressureCleared} />
           <Stat label="开花" value={bloomCount} />
         </div>
-
         <div className="rounded-2xl bg-[#FFF7FB] p-3 text-sm text-[#5b5b6d]">
           <div className="text-xs text-[#9090a0] mb-1">本局奖励</div>
           <div className="flex items-center justify-around">
@@ -67,7 +51,6 @@ export default function ResultModal({
             <Reward emoji="💧" label="水滴" v={reward.waterGained} />
           </div>
         </div>
-
         <div className="mt-5 grid grid-cols-1 gap-2">
           {won && hasNextLevel && onNext && (
             <PrimaryButton onClick={onNext}>下一关</PrimaryButton>
@@ -79,11 +62,8 @@ export default function ResultModal({
             {won ? '去我的花园' : '去花园休息一下'}
           </PrimaryButton>
           {onHome && (
-            <button
-              onClick={onHome}
-              className="text-xs text-[#9090a0] mt-1 underline-offset-2 hover:underline"
-            >
-              换个状态
+            <button onClick={onHome} className="text-xs text-[#9090a0] mt-1 underline-offset-2 hover:underline">
+              返回首页
             </button>
           )}
         </div>

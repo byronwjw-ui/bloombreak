@@ -1,4 +1,4 @@
-import type { Mood } from '@/types/game';
+import type { Mood, GameKind } from '@/types/game';
 
 export const MOOD_OPTIONS: { value: Mood; label: string; emoji: string }[] = [
   { value: 'meeting', label: '开会开麻了', emoji: '💬' },
@@ -61,17 +61,48 @@ export const gardenMessages = [
 
 export const welcomeText = [
   '今天也辛苦啦。',
-  '不用马上解决整个世界，先清掉三个小压力。',
+  '不用马上解决整个世界，先选一个方式，清掉一点小压力。',
 ];
 
-/** Easter eggs */
-export const easterEggs = {
-  consecutiveLosses: '系统检测到今天压力偏高。\n建议：喝水、伸懒腰、暂时不要打开工作群。',
-  consecutiveSessions: '系统检测到你已经认真解压 3 次。\n如果现在是下班时间，请保存文件，优雅撤退。',
-  finishedAllLevels:
-    '第一阶段解压完成。\n你的花园已经开始营业，而你也可以暂时不营业。',
-  noMoreLevels: '更多花园关卡正在生长中。\n你已经完成了第一阶段的解压旅程。',
+export type GameCardCopy = {
+  kind: GameKind;
+  title: string;
+  emoji: string;
+  blurb: string;
+  suitable: string;
+  cta: string;
+  href: string;
 };
+
+export const GAME_CARDS: GameCardCopy[] = [
+  {
+    kind: 'match',
+    title: '压力消消班',
+    emoji: '✨',
+    blurb: '交换、消除、清空今日待办。',
+    suitable: '适合：想快速进入状态的时候。',
+    cta: '开始消除',
+    href: '/games/match',
+  },
+  {
+    kind: 'tray',
+    title: '压力收纳所',
+    emoji: '🧺',
+    blurb: '把脑子里的杂事放进托盘，三个一组清掉。',
+    suitable: '适合：事情太多、脑子很满的时候。',
+    cta: '开始收纳',
+    href: '/games/tray',
+  },
+  {
+    kind: 'bloom',
+    title: '偷偷开花局',
+    emoji: '🌸',
+    blurb: '连起花朵，让压力在花园里爆开。',
+    suitable: '适合：想治愈、想放空、想看连锁开花的时候。',
+    cta: '开始开花',
+    href: '/games/bloom',
+  },
+];
 
 export function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];

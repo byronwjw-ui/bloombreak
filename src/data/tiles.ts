@@ -1,6 +1,6 @@
-import type { TileCategory, TileType } from '@/types/game';
+import type { MatchTileType, TrayCardType, BloomCellType } from '@/types/game';
 
-export const TILE_EMOJI: Record<TileType, string> = {
+export const MATCH_EMOJI: Record<MatchTileType, string> = {
   coffee: '☕',
   mail: '✉️',
   calendar: '📅',
@@ -11,32 +11,9 @@ export const TILE_EMOJI: Record<TileType, string> = {
   meeting: '💬',
   kpi: '📈',
   fog: '🌫️',
-  flower_bud: '🌱',
-  flower_small: '🌼',
-  flower_bloom: '🌸',
 };
 
-export const TILE_CATEGORY: Record<TileType, TileCategory> = {
-  coffee: 'normal',
-  mail: 'normal',
-  calendar: 'normal',
-  note: 'normal',
-  star: 'normal',
-  leaf: 'normal',
-  deadline: 'pressure',
-  meeting: 'pressure',
-  kpi: 'pressure',
-  fog: 'pressure',
-  flower_bud: 'flower',
-  flower_small: 'flower',
-  flower_bloom: 'flower',
-};
-
-export const NORMAL_TYPES: TileType[] = ['coffee', 'mail', 'calendar', 'note', 'star', 'leaf'];
-export const PRESSURE_TYPES: TileType[] = ['deadline', 'meeting', 'kpi', 'fog'];
-export const FLOWER_TYPES: TileType[] = ['flower_bud', 'flower_small', 'flower_bloom'];
-
-export const TILE_LABEL: Record<TileType, string> = {
+export const MATCH_LABEL: Record<MatchTileType, string> = {
   coffee: '咖啡',
   mail: '邮件',
   calendar: '日历',
@@ -47,13 +24,9 @@ export const TILE_LABEL: Record<TileType, string> = {
   meeting: '会议',
   kpi: 'KPI',
   fog: '内耗',
-  flower_bud: '花苞',
-  flower_small: '小花',
-  flower_bloom: '盛开花',
 };
 
-/** background palette for tile chips */
-export const TILE_BG: Record<TileType, string> = {
+export const MATCH_BG: Record<MatchTileType, string> = {
   coffee: 'bg-amber-50',
   mail: 'bg-sky-50',
   calendar: 'bg-orange-50',
@@ -64,7 +37,57 @@ export const TILE_BG: Record<TileType, string> = {
   meeting: 'bg-indigo-100',
   kpi: 'bg-purple-100',
   fog: 'bg-slate-200',
-  flower_bud: 'bg-emerald-100',
-  flower_small: 'bg-pink-100',
-  flower_bloom: 'bg-pink-200',
+};
+
+export const PRESSURE_MATCH_TYPES: MatchTileType[] = ['deadline', 'meeting', 'kpi', 'fog'];
+export const NORMAL_MATCH_TYPES: MatchTileType[] = ['coffee', 'mail', 'calendar', 'note', 'star', 'leaf'];
+
+export const TRAY_EMOJI: Record<TrayCardType, string> = {
+  deadline: '⏰',
+  meeting: '💬',
+  kpi: '📈',
+  fog: '🌫️',
+  mail: '✉️',
+  note: '📝',
+  coffee: '☕',
+};
+
+export const TRAY_LABEL: Record<TrayCardType, string> = {
+  deadline: 'Deadline',
+  meeting: '会议',
+  kpi: 'KPI',
+  fog: '内耗',
+  mail: '消息',
+  note: '待办',
+  coffee: '续命咖啡',
+};
+
+export const TRAY_BG: Record<TrayCardType, string> = {
+  deadline: 'bg-rose-100',
+  meeting: 'bg-indigo-100',
+  kpi: 'bg-purple-100',
+  fog: 'bg-slate-200',
+  mail: 'bg-sky-50',
+  note: 'bg-yellow-50',
+  coffee: 'bg-amber-50',
+};
+
+export const BLOOM_EMOJI: Record<BloomCellType, string> = {
+  bud: '🌱',
+  small: '🌼',
+  bloom: '🌸',
+  sun: '☀️',
+  water: '💧',
+  fog: '🌫️',
+  empty: '',
+};
+
+export const BLOOM_BG: Record<BloomCellType, string> = {
+  bud: 'bg-emerald-100',
+  small: 'bg-pink-100',
+  bloom: 'bg-pink-200',
+  sun: 'bg-yellow-100',
+  water: 'bg-sky-100',
+  fog: 'bg-slate-200',
+  empty: 'bg-transparent',
 };

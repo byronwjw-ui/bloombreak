@@ -21,9 +21,7 @@ export default function MoodSelector({ value, onChange }: Props) {
             className={[
               'rounded-2xl px-4 py-3 text-sm sm:text-base text-left transition active:scale-95',
               'flex items-center gap-2 shadow-tile',
-              active
-                ? 'bg-[#FF8FB3] text-white shadow-soft'
-                : 'bg-white/80 text-[#3A3A4A] hover:bg-white',
+              active ? 'bg-[#FF8FB3] text-white shadow-soft' : 'bg-white/80 text-[#3A3A4A] hover:bg-white',
             ].join(' ')}
           >
             <span className="text-xl">{opt.emoji}</span>
