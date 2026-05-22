@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  color: #3A3A4A;
+  font-family: ui-rounded, 'Hiragino Maru Gothic ProN', 'Quicksand', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body {
+  background: linear-gradient(160deg, #FFF7FB 0%, #F7F3FF 55%, #F0FFF4 100%);
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+}
+
+.no-touch-zoom {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---------- keyframes ---------- */
+
+@keyframes bloom-pop {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 1; filter: drop-shadow(0 0 12px #ff8fb3); }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes tile-appear {
+  from { transform: translateY(-10px) scale(0.9); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes tile-vanish {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+@keyframes tray-flash {
+  0% { background-color: #FFF7FB; }
+  50% { background-color: #F9C74F; box-shadow: 0 0 12px #F9C74F; }
+  100% { background-color: #FFF7FB; }
+}
+
+@keyframes modal-in {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes soft-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes petal-sparkle {
+  0% { transform: scale(0.8); opacity: 0; }
+  40% { transform: scale(1.2); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.animate-bloom-pop { animation: bloom-pop 520ms ease-out forwards; }
+.animate-tile-appear { animation: tile-appear 240ms ease-out both; }
+.animate-tile-vanish { animation: tile-vanish 220ms ease-in forwards; }
+.animate-tray-flash { animation: tray-flash 460ms ease-out; }
+.animate-modal-in { animation: modal-in 280ms ease-out both; }
+.animate-soft-float { animation: soft-float 3.2s ease-in-out infinite; }
+.animate-petal-sparkle { animation: petal-sparkle 600ms ease-out forwards; }
+
+.tile-selected {
+  outline: 3px solid #FF8FB3;
+  outline-offset: -2px;
+  transform: scale(1.08);
+  z-index: 5;
+}
+
+.glow-pink { box-shadow: 0 0 14px rgba(255, 143, 179, 0.55); }
+.glow-gold { box-shadow: 0 0 14px rgba(249, 199, 79, 0.65); }
