@@ -6,17 +6,26 @@ import MoodSelector from '@/components/MoodSelector';
 import SoftButton from '@/components/SoftButton';
 import ProgressStars from '@/components/ProgressStars';
 import { loadMood, loadProgressV2, saveMood } from '@/lib/storage';
-import { GAME_CARDS, welcomeText } from '@/data/copy';
+import { GAME_CARDS, easterEggs, welcomeText } from '@/data/copy';
 import type { Mood, ProgressDataV2, GameKind } from '@/types/game';
 
 export default function HomePage() {
   const router = useRouter();
   const [mood, setMood] = useState<Mood | null>(null);
   const [progress, setProgress] = useState<ProgressDataV2 | null>(null);
+  const [egg, setEgg] = useState<string | null>(null);
 
   useEffect(() => {
     setMood(loadMood());
-    setProgress(loadProgressV2());
+    const p = loadProgressV2();
+    setProgress(p);
+    // surface easter eggs on home
+    if ((p.consecutiveLosses ?? 0) >= 2) setEgg(easterEggs.consecutiveLosses);
+    else if (p.totalSessions >= 3 && p.totalSessions % 3 === 0) setEgg(easterEggs.consecutiveSessions);
+    else {
+      const completed12 = p.match.starsByLevel[12] || p.tray.starsByLevel[12] || p.bloom.starsByLevel[12];
+      if (completed12) setEgg(easterEggs.finishedAllLevels);
+    }
   }, []);
 
   const go = (href: string) => {
@@ -34,11 +43,18 @@ export default function HomePage() {
           <div className="text-sm text-[#6B6B82] mt-2">每天 3 分钟，清空一点压力</div>
         </header>
 
-        <section className="rounded-3xl bg-white/75 backdrop-blur shadow-[0_8px_24px_rgba(48,48,68,0.06)] p-5 mb-5">
+        <section className="rounded-3xl bg-white/85 backdrop-blur shadow-[0_8px_24px_rgba(48,48,68,0.06)] p-5 mb-5">
           {welcomeText.map((t, i) => (
             <p key={i} className="text-sm text-[#303044] leading-relaxed">{t}</p>
           ))}
         </section>
+
+        {egg && (
+          <section className="rounded-2xl bg-[#FFF8E5] border border-[#F5DCA8] px-4 py-3 mb-4 text-xs text-[#7a5418] whitespace-pre-line leading-relaxed">
+            <div className="text-[10px] uppercase tracking-wider text-[#a07a30] font-bold mb-1">今天的小提示</div>
+            {egg}
+          </section>
+        )}
 
         <section className="mb-5">
           <div className="text-xs text-[#9C9CB0] mb-2 px-1">今天的状态</div>
@@ -101,18 +117,13 @@ function GameProgressCard({
           </div>
           <p className="text-xs text-[#6B6B82] mt-1">{card.blurb}</p>
           <p className="text-[11px] text-[#9C9CB0] mt-1">{card.suitable}</p>
-
-          <div className="mt-2.5 flex items-center gap-2 text-[11px]">
-            <span className="rounded-full bg-white/85 px-2 py-0.5 text-[#303044] font-semibold">
-              已完成 <b className="text-[#FF8FB3]">{completed}</b>/12
-            </span>
+          <div className="mt-2.5 flex items-center gap-2 text-[11px] flex-wrap">
+            <span className="rounded-full bg-white/85 px-2 py-0.5 text-[#303044] font-semibold">已完成 <b className="text-[#FF8FB3]">{completed}</b>/12</span>
             <span className="rounded-full bg-white/85 px-2 py-0.5 text-[#303044] font-semibold flex items-center gap-1">
               <ProgressStars filled={3} size="sm" className="opacity-60" /> {stars}/36
             </span>
           </div>
-          <div className="mt-1.5 text-[11px] text-[#6B6B82]">
-            推荐 <b className="text-[#303044]">第 {next} 关</b>
-          </div>
+          <div className="mt-1.5 text-[11px] text-[#6B6B82]">推荐 <b className="text-[#303044]">第 {next} 关</b></div>
         </div>
         <div className="shrink-0 self-center">
           <span className="inline-flex items-center text-xs font-semibold text-white bg-[#FF8FB3] rounded-full px-3 py-2 shadow-[0_4px_12px_rgba(255,143,179,0.4)]">
