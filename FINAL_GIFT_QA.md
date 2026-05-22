@@ -1,9 +1,24 @@
 # Bloom Break · 最终礼物版 QA
 
+## 第二轮纠偏新增交付
+- ✅ `swipeGesture` hook（可复用 pointer drag/swipe，32% 阈值）
+- ✅ `chainGesture` hook（可复用 8-way path connection）
+- ✅ `DeskSurface` 装饰层（咖啡渍 SVG + 回形针 + 尺子 + 胶带条 + 暖色 vignette）
+- ✅ `PetalDriftLayer`（6 朵 SVG 花瓣在花园棋盘上 idle 飘浮）
+- ✅ `SpecialTileIcon`（line_h / line_v / bomb / vacuum 各自独立 SVG）
+- ✅ Bloom 释放时**路径依次亮起** staggered glow（60ms/格）
+- ✅ Bloom sunburst 中央**大光圈 ring-pulse**
+- ✅ ResultModal **star threshold 提示**（"再 X 分就能拿 N 星"）
+- ✅ Tray **桌面快露出来了** milestone toast（80% 触发）
+- ✅ Tray 托盘满 7/7 强警示 ring-4 + warn-pulse
+- ✅ Match 28 朵胜利花瓣（升级到 5 种花型）
+
 ## 三个游戏视觉一眼可区分
-- 压力消消班：粉奶油背景 + 斜纹纹理 + 渐变能量块 tile
-- 压力收纳所：暖黄办公桌背景 + 木纹 + 便利贴卡片（顶部胶带 + 折角）
-- 偷偷开花局：薰衣草+天蓝背景 + 花粉光斑 + SVG 花朵 + 拖拽光线
+| 游戏 | 背景 | 纹理 | chip 类型 |
+|---|---|---|---|
+| 压力消消班 | 粉奶油渐变 | 斜纹 | 渐变能量块 + 字符 + 中文标签 + 4 种特殊 SVG |
+| 压力收纳所 | 暖黄办公桌 | 木纹 + 桌面装饰（咖啡渍/回形针/尺子/胶带） | 便利贴（顶部胶带 + 折角 + 微旋转） |
+| 偷偷开花局 | 薰衣草+天蓝 | 花粉光斑 + idle 飘浮花瓣 | 4 种 SVG 花朵 × 4 阶段 + 拖动光线 |
 
 ## 压力消消班 `/games/match`
 - [x] 鼠标按住拖动方向 ≥ 32% 格子尺寸触发交换
@@ -12,9 +27,9 @@
 - [x] 无效交换弹回，不扣步数
 - [x] 有效交换扣 1 步
 - [x] 3 连消除 + cascade
-- [x] 4 连生成 line_h / line_v
-- [x] 5 连生成 vacuum
-- [x] T/L 形生成 bomb
+- [x] 4 连生成 line_h / line_v（独立 SVG 图标）
+- [x] 5 连生成 vacuum（conic 渐变 SVG 图标）
+- [x] T/L 形生成 bomb（炸弹 SVG 图标）
 - [x] 特殊方块点一下直接触发
 - [x] meeting_bubble 需要相邻消除 2 次
 - [x] fog_layer 需要相邻消除散开
@@ -23,17 +38,21 @@
 - [x] combo toast：连清 2 次 / 压力雪崩 / 收件箱清爽了
 - [x] 剩 3 步时 near-end 提示
 - [x] 1-3 星按分数给
+- [x] 失败 modal 显示 "再 X 分能拿 N 星"
 
 ## 压力收纳所 `/games/tray`
-- [x] 卡片错落堆叠 + 微旋转，不是规则棋盘
+- [x] 卡片错落堆叠 + 17% 大小 + 微旋转
+- [x] 桌面装饰层（咖啡渍 / 回形针 / 尺子 / 胶带 / 暖色 vignette）
 - [x] 被压住的卡片半透明 + 灰度 + 锁图标
 - [x] 可点卡片有 hover 浮起
 - [x] 点击进入 7 格托盘
 - [x] 三同自动归档 + 闪光
-- [x] 托盘 6/7 满 → ring + warn-pulse 红色脉冲
+- [x] 托盘 6/7 ring-2 + warn-pulse
+- [x] 托盘 7/7 ring-4 强警示 "小心，下一张就满"
 - [x] 撤回道具回退上一步
 - [x] 安全洗牌道具只换可点卡片 type
-- [x] 智能提示道具高亮一个可点 + 优先能凑齐三连的
+- [x] 智能提示道具高亮可点 + 优先能凑齐三连
+- [x] 80% 触发 "桌面快露出来了" milestone toast
 - [x] near-win 安慰文案
 
 ## 偷偷开花局 `/games/bloom`
@@ -45,17 +64,19 @@
 - [x] 少于 3 个松手取消
 - [x] 3 个释放：路径上的花成长 1 级
 - [x] 4 连：终点随机邻居成长
-- [x] 5 连：生成 sunburst，爆开 5×5
+- [x] 5 连：生成 sunburst，爆开 5×5 + 中央大光圈 ring-pulse
 - [x] 6 连+：chain boost +200/朵
+- [x] 释放时**路径依次亮起**（60ms staggered grow-pop）
 - [x] 盛开花再成长触发爆开 3×3
-- [x] 连锁爆花有 150-380ms 节奏
+- [x] 连锁爆花有 150-420ms 节奏
 - [x] fog 被相邻能量散开
 - [x] withered_leaf 被相邻能量清除
 - [x] stone 只能被爆花清除
-- [x] 胜利时 24 朵花瓣飘落（petal-fall）
+- [x] 棋盘空闲时 6 朵 SVG 花瓣 idle 飘浮
+- [x] 胜利时 28 朵花瓣飘落（5 种花型）
 - [x] 失败 near-win 安慰
 
-## 难度
+## 难度（v3 收紧后）
 - L1-2: 轻松 — 教规则
 - L3-6: 有点忙 — 加入阻碍
 - L7-9: 压力上来了 — 组合目标
@@ -65,6 +86,7 @@
 - 首页文案是私人语气，不是产品语气
 - 无订阅、无 AI 包装、无商业按钮
 - 彩蛋：连败 2 次 / 玩 3 局 / 通关 12 关
+- 失败 ResultModal 显示星级差距，让她"差一点想再来"
 
 ## Build
 - TS 严格类型贯通
