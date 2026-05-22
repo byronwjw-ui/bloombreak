@@ -9,6 +9,7 @@ import ResultModal from '@/components/ResultModal';
 import SoftButton from '@/components/SoftButton';
 import BloomChip from '@/components/chips/BloomChip';
 import ConnectionLine from '@/components/ConnectionLine';
+import PetalDriftLayer from '@/components/PetalDriftLayer';
 import FeedbackToast, { makeToast, type ToastItem } from '@/components/FeedbackToast';
 import LevelStrip from '@/components/LevelStrip';
 import { BLOOM_LEVELS_V2, BLOOM_MAX_LEVEL_V2, getBloomLevelV2 } from '@/data/bloomLevels2';
@@ -59,6 +60,7 @@ function BloomInner() {
   const [board, setBoard] = useState<BloomBoard>(() => createBloomBoard(level));
   const [chain, setChain] = useState<Position[]>([]);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
+  const [staggeredKeys, setStaggeredKeys] = useState<Set<string>>(new Set());
   const [score, setScore] = useState(0);
   const [movesLeft, setMovesLeft] = useState(level.moves);
   const [counters, setCounters] = useState<Counters>({ bloomCount: 0, chainCount: 0, fogCleared: 0, leavesCleared: 0 });
@@ -70,6 +72,7 @@ function BloomInner() {
   const [resultStars, setResultStars] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [showPetals, setShowPetals] = useState(false);
+  const [bigBurst, setBigBurst] = useState<{ x: number; y: number } | null>(null);
   const finishedRef = useRef(false);
   const boardRef = useRef<HTMLDivElement | null>(null);
   const draggingRef = useRef(false);
@@ -83,6 +86,7 @@ function BloomInner() {
     setBoard(createBloomBoard(level));
     setChain([]);
     setTip(null);
+    setStaggeredKeys(new Set());
     setScore(0);
     setMovesLeft(level.moves);
     setCounters({ bloomCount: 0, chainCount: 0, fogCleared: 0, leavesCleared: 0 });
@@ -93,6 +97,7 @@ function BloomInner() {
     setResultStars(0);
     setToasts([]);
     setShowPetals(false);
+    setBigBurst(null);
     finishedRef.current = false;
     draggingRef.current = false;
   }, [level]);
@@ -117,7 +122,7 @@ function BloomInner() {
     setReward(r);
     setResultMessage(pickOne(winMessages));
     setShowPetals(true);
-    setTimeout(() => setStatus('won'), 600);
+    setTimeout(() => setStatus('won'), 700);
   }, [levelId, score, counters, level.stars]);
 
   const finishLose = useCallback(() => {
@@ -163,7 +168,6 @@ function BloomInner() {
       }
       const last = prev[prev.length - 1];
       if (last.row === pos.row && last.col === pos.col) return prev;
-      // undo: hovering back over previous
       if (prev.length >= 2) {
         const beforeLast = prev[prev.length - 2];
         if (beforeLast.row === pos.row && beforeLast.col === pos.col) return prev.slice(0, -1);
@@ -183,6 +187,18 @@ function BloomInner() {
     if (c.length < 3) return;
 
     setBusy(true);
+
+    // STAGGERED PATH GLOW: brighten each path cell one by one
+    for (let i = 0; i < c.length; i++) {
+      const k = `${c[i].row}_${c[i].col}`;
+      setStaggeredKeys((prev) => {
+        const next = new Set(prev);
+        next.add(k);
+        return next;
+      });
+      await delay(60);
+    }
+
     setMovesLeft((m) => Math.max(0, m - 1));
 
     const result = releaseChain(board, c);
@@ -190,6 +206,7 @@ function BloomInner() {
     const keys = new Set<string>(result.removedPositions.map((p) => `${p.row}_${p.col}`));
     setExplodingKeys(keys);
     setBoard(nextBoard);
+    setStaggeredKeys(new Set());
 
     if (c.length >= 6) pushToast(pickOne(bloomLongChain), 'bloom');
     else if (c.length === 5) pushToast(pickOne(bloomLongChain), 'milestone');
@@ -197,14 +214,22 @@ function BloomInner() {
       const idx = Math.min(bloomComboLines.length - 1, result.chainCount - 1);
       pushToast(bloomComboLines[idx], 'bloom');
     }
-    if (result.sunburstAt) pushToast('Sunburst ✦', 'milestone');
+    if (result.sunburstAt) {
+      pushToast('Sunburst ✦', 'milestone');
+      const cellPct = 100 / level.size;
+      setBigBurst({
+        x: result.sunburstAt.col * cellPct + cellPct / 2,
+        y: result.sunburstAt.row * cellPct + cellPct / 2,
+      });
+      setTimeout(() => setBigBurst(null), 700);
+    }
 
-    await delay(380);
+    await delay(420);
 
     nextBoard = collapseAndRefill(nextBoard, level);
     setExplodingKeys(new Set());
     setBoard(nextBoard);
-    await delay(140);
+    await delay(160);
 
     setScore((s) => s + result.scoreGained);
     setCounters((prev) => ({
@@ -248,7 +273,6 @@ function BloomInner() {
     return m;
   }, [chain]);
 
-  // determine chain color from first cell
   const chainColor = useMemo(() => {
     if (chain.length === 0) return FLOWER_COLOR.rose;
     const first = board[chain[0].row]?.[chain[0].col];
@@ -288,32 +312,44 @@ function BloomInner() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          className="relative rounded-3xl p-2 bg-white/60 backdrop-blur shadow-[0_12px_30px_rgba(159,122,234,0.20)] no-touch-scroll bloom-texture"
+          className="relative rounded-3xl p-2 bg-white/60 backdrop-blur shadow-[0_12px_30px_rgba(159,122,234,0.22)] no-touch-scroll bloom-texture"
           style={{ width: 'min(94vw, 432px)' }}
         >
-          <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${level.size}, minmax(0, 1fr))` }}>
+          <PetalDriftLayer />
+          <div className="grid gap-1 relative z-[2]" style={{ gridTemplateColumns: `repeat(${level.size}, minmax(0, 1fr))` }}>
             {board.map((row, r) =>
               row.map((tile, c) => {
                 const key = `${r}_${c}`;
                 const idx = inChainIdx.get(key);
                 const chained = idx !== undefined;
                 const exp = explodingKeys.has(key);
+                const stagger = staggeredKeys.has(key);
                 if (!tile) return <div key={key} className="aspect-square rounded-xl bg-transparent" />;
                 return (
-                  <BloomChip
-                    key={tile.id}
-                    chip={tile.data}
-                    chained={chained}
-                    chainOrder={idx}
-                    exploding={exp}
-                    isNew={tile.isNew}
-                  />
+                  <div key={tile.id} className={stagger ? 'animate-grow-pop' : ''}>
+                    <BloomChip
+                      chip={tile.data}
+                      chained={chained}
+                      chainOrder={idx}
+                      exploding={exp}
+                      isNew={tile.isNew}
+                    />
+                  </div>
                 );
               })
             )}
           </div>
-          {/* glowing connection line overlay */}
           <ConnectionLine chain={chain} size={level.size} tip={chain.length > 0 ? tip : null} color={chainColor} />
+          {/* sunburst big ring */}
+          {bigBurst && (
+            <div
+              className="pointer-events-none absolute z-[8]"
+              style={{ left: `${bigBurst.x}%`, top: `${bigBurst.y}%`, transform: 'translate(-50%, -50%)' }}
+            >
+              <span className="block w-20 h-20 rounded-full animate-ring-pulse"
+                style={{ background: 'radial-gradient(circle,rgba(249,199,79,0.6),transparent 70%)' }} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -336,17 +372,17 @@ function BloomInner() {
 
       {showPetals && (
         <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
-          {Array.from({ length: 24 }).map((_, i) => (
+          {Array.from({ length: 28 }).map((_, i) => (
             <span
               key={i}
               className="absolute animate-petal-fall text-3xl"
               style={{
-                left: `${(i * 41) % 100}%`,
+                left: `${(i * 37) % 100}%`,
                 top: `-5%`,
-                animationDelay: `${(i % 8) * 0.12}s`,
+                animationDelay: `${(i % 8) * 0.1}s`,
               }}
             >
-              {['🌸', '🌼', '🌷', '🌹'][i % 4]}
+              {['🌸', '🌼', '🌷', '🌹', '💮'][i % 5]}
             </span>
           ))}
         </div>
