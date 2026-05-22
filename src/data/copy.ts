@@ -27,10 +27,10 @@ export const winMessages = [
 ];
 
 export const loseMessages = [
-  '托盘满了不是你的问题，是今天的事情真的太多了。深呼吸一下，我们再清一次。',
+  '托盘满了不是你的问题，是今天的事情真的太多了。',
   '你没有失败，只是脑子里的标签页开太多了。',
   '今天已经很不容易了。重新开始不是倒退，是给自己一次缓冲。',
-  '就差一点点。这不是失败，是今天事情真的太挤了。',
+  '就差一点点。这不是失败，是今天事情真的太挨了。',
 ];
 
 export const nearWinMessages = [
@@ -48,55 +48,25 @@ export const gardenMessages = [
 
 export const welcomeText = [
   '今天也辛苦啦。',
-  '不用马上解决整个世界，先选一个方式，清掉一点小压力。',
+  '不用马上解决整个世界。',
+  '先玩一小局，把脑子里的压力清掉一点。',
 ];
 
-/* ============ feedback bursts ============ */
-
-export const matchComboLines = [
-  '连清 2 次',
-  '连清 3 次',
-  '压力雪崩',
-  '收件箱清爽了',
-  '思路打开',
-  '会议室空了一半',
-];
-
-export const matchSpecialLines = {
-  line_h: '横扫一整行',
-  line_v: '纵向清空',
-  bomb: '冲击波',
-  vacuum: '一次吸走一种',
-};
-
+export const matchComboLines = ['连清 2 次', '连清 3 次', '压力雪崩', '收件箱清爽了', '思路打开', '会议室空了一半'];
+export const matchSpecialLines = { line_h: '横扫一整行', line_v: '纵向清空', bomb: '冲击波', vacuum: '一次吸走一种' };
 export const matchNearEnd = '还差一点点，先看哪个目标最接近。';
 
-export const trayMilestones = [
-  '已归档',
-  '脑子空出一格',
-  '桌面快清出来了',
-  '又收了一组',
-];
-
+export const trayMilestones = ['已归档', '脑子空出一格', '桌面快露出来了', '又收了一组'];
 export const trayWarn = '托盘快满了，先别再加压力卡片。';
 
-export const bloomComboLines = [
-  'Bloom x2',
-  'Bloom x3',
-  'Bloom x4',
-  '偷偷开花成功',
-  '漂亮的一串',
-  '这波很会呼吸',
-  '花海连锁',
-];
+export const bloomComboLines = ['Bloom x2', 'Bloom x3', 'Bloom x4', '偷偷开花成功', '漂亮的一串', '这波很会呼吸', '花海连锁'];
+export const bloomLongChain = ['一串好长', '深呼吸的节奏', '一次大的'];
 
-export const bloomLongChain = [
-  '一串好长',
-  '深呼吸的节奏',
-  '一次大的',
-];
-
-/* ============ hub cards ============ */
+export const easterEggs = {
+  consecutiveLosses: '系统检测到今天压力偏高。\n建议：喝水、伸懒腰、暂时不要打开工作群。',
+  consecutiveSessions: '系统检测到你已经认真解压 3 次。\n如果现在是下班时间，请保存文件，优雅撚退。',
+  finishedAllLevels: '第一阶段解压完成。\n你的花园已经开始营业，而你也可以暂时不营业。',
+};
 
 export type GameCardCopy = {
   kind: GameKind;
@@ -114,8 +84,8 @@ export const GAME_CARDS: GameCardCopy[] = [
     kind: 'match',
     title: '压力消消班',
     subtitle: 'Pressure Match',
-    blurb: '交换、消除、清空今日待办。',
-    suitable: '适合：想快速进入状态的时候。',
+    blurb: '像处理待办一样交换、消除、连清。',
+    suitable: '适合：想爽快清空一点杂事的时候。',
     cta: '开始消除',
     href: '/games/match',
     theme: 'match',
@@ -124,8 +94,8 @@ export const GAME_CARDS: GameCardCopy[] = [
     kind: 'tray',
     title: '压力收纳所',
     subtitle: 'Tray Detox',
-    blurb: '把脑子里的杂事放进托盘，三个一组清掉。',
-    suitable: '适合：事情太多、脑子很满的时候。',
+    blurb: '把会议、消息、KPI 先放进托盘，三个一组归档。',
+    suitable: '适合：事情太多，脑子很满的时候。',
     cta: '开始收纳',
     href: '/games/tray',
     theme: 'tray',
@@ -134,8 +104,8 @@ export const GAME_CARDS: GameCardCopy[] = [
     kind: 'bloom',
     title: '偷偷开花局',
     subtitle: 'Bloom Chain',
-    blurb: '连起花朵，让压力在花园里爆开。',
-    suitable: '适合：想治愈、想放空、想看连锁开花的时候。',
+    blurb: '按住拖动连起花朵，让压力在花园里爆开。',
+    suitable: '适合：想放空、想治愈、想看花开的时候。',
     cta: '开始开花',
     href: '/games/bloom',
     theme: 'bloom',
