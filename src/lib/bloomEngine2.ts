@@ -56,20 +56,25 @@ export function inBounds(board: BloomBoard, r: number, c: number): boolean {
   return r >= 0 && r < board.length && c >= 0 && c < board[0].length;
 }
 
-export function isAdjacent(a: Position, b: Position): boolean {
+/** 8-way adjacency (includes diagonals) */
+export function isAdjacent8(a: Position, b: Position): boolean {
   const dr = Math.abs(a.row - b.row);
   const dc = Math.abs(a.col - b.col);
-  return (dr === 0 && dc === 1) || (dr === 1 && dc === 0);
+  return dr <= 1 && dc <= 1 && !(dr === 0 && dc === 0);
 }
 
-/** Same flower TYPE (any stage) and adjacent and not duplicate. */
+/** 4-way for engines that need it */
+export function isAdjacent(a: Position, b: Position): boolean {
+  return isAdjacent8(a, b);
+}
+
 export function canExtendChain(board: BloomBoard, chain: Position[], next: Position): boolean {
   if (!inBounds(board, next.row, next.col)) return false;
   const cell = board[next.row][next.col];
   if (!isFlower(cell)) return false;
   if (chain.length === 0) return true;
   const last = chain[chain.length - 1];
-  if (!isAdjacent(last, next)) return false;
+  if (!isAdjacent8(last, next)) return false;
   if (chain.some((p) => p.row === next.row && p.col === next.col)) return false;
   const lastCell = board[last.row][last.col];
   if (!isFlower(lastCell)) return false;
@@ -90,7 +95,7 @@ export function isValidChain(board: BloomBoard, chain: Position[]): boolean {
     if (!isFlower(cell)) return false;
     if (type === null) type = cell.data.flower;
     else if (cell.data.flower !== type) return false;
-    if (i > 0 && !isAdjacent(chain[i - 1], p)) return false;
+    if (i > 0 && !isAdjacent8(chain[i - 1], p)) return false;
   }
   return true;
 }
@@ -106,20 +111,6 @@ export type ReleaseResult = {
   sunburstAt: Position | null;
 };
 
-/**
- * Release rules:
- *  - chain.length >= 3 required.
- *  - all chained cells consumed except the LAST (it grows by 1 stage; if bloom, it explodes).
- *  - chain length 4: also grow one random neighbor flower of the last cell.
- *  - chain length 5+: spawn sunburst at last cell which on explosion clears 5x5.
- *  - chain length 6+: chainBoost - every bloom triggered also boosts adjacent blooms (handled via cascade queue).
- *  - 8-neighbors of every chain cell:
- *      * fog -> cleared
- *      * withered_leaf -> cleared (counts as leaf clear)
- *      * stone -> only explosions can break; not affected here
- *      * non-bloom flower -> grow 1 stage
- *      * bloom flower -> cascade explode
- */
 export function releaseChain(board: BloomBoard, chain: Position[]): ReleaseResult {
   let next: BloomBoard = board.map((row) => row.slice());
   const removedPositions: Position[] = [];
@@ -149,12 +140,10 @@ export function releaseChain(board: BloomBoard, chain: Position[]): ReleaseResul
     }
   }
 
-  // process last cell
   const lastCell = next[last.row][last.col];
   const isBigChain = chain.length >= 5;
   if (lastCell && isFlower(lastCell)) {
     if (lastCell.data.stage === 'bloom' || isBigChain) {
-      // either bloom or sunburst -> explode
       if (isBigChain) sunburstAt = { row: last.row, col: last.col };
       const exp = explodeAt(next, last, isBigChain);
       next = exp.board;
@@ -171,7 +160,7 @@ export function releaseChain(board: BloomBoard, chain: Position[]): ReleaseResul
     }
   }
 
-  // chain length 4: grow one extra random neighbor flower of the last cell
+  // chain length 4 bonus: grow one extra random neighbor flower of the last cell
   if (chain.length === 4) {
     const neighbors: Position[] = [];
     for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
@@ -190,7 +179,7 @@ export function releaseChain(board: BloomBoard, chain: Position[]): ReleaseResul
     }
   }
 
-  // grow 8-neighbors of the chain (flowers/fog/leaf), cascade blooms
+  // grow 8-neighbors of every chain cell
   const grewKeys = new Set<string>();
   for (const p of chain) {
     for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
@@ -233,7 +222,7 @@ export function releaseChain(board: BloomBoard, chain: Position[]): ReleaseResul
     }
   }
 
-  // chain boost: long chain → +200 per bloom
+  // chain boost
   if (chain.length >= 6) {
     scoreGained += bloomsTriggered * 200;
   }
@@ -279,7 +268,7 @@ function explodeAt(board: BloomBoard, pos: Position, big: boolean): ExplodeResul
         if (isObstacle(cell)) {
           if (cell.data.obstacle === 'fog') { fogCleared += 1; scoreGained += 60; }
           else if (cell.data.obstacle === 'withered_leaf') { leavesCleared += 1; scoreGained += 80; }
-          else { /* stone */ scoreGained += 40; }
+          else { scoreGained += 40; }
           removedPositions.push({ row: r, col: c });
           next[r][c] = null;
           continue;
@@ -289,19 +278,16 @@ function explodeAt(board: BloomBoard, pos: Position, big: boolean): ExplodeResul
             queue.push({ pos: { row: r, col: c }, big: false });
             cascades += 1;
           } else {
-            // grow neighbors
             next[r][c] = { ...cell, data: { ...cell.data, stage: nextStage(cell.data.stage) } };
             scoreGained += 30;
             continue;
           }
         }
-        // also remove center on first explosion
         removedPositions.push({ row: r, col: c });
         next[r][c] = null;
         scoreGained += 30;
       }
     }
-    // remove the center
     const cc = next[p.row][p.col];
     if (cc) {
       removedPositions.push({ row: p.row, col: p.col });
@@ -329,7 +315,6 @@ export function collapseAndRefill(board: BloomBoard, level: BloomLevel): BloomBo
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (!next[r][c]) {
-        // refill prefers a flower (lower obstacle rate on refill)
         if (chance(level.weights.obstacleChance * 0.3)) {
           const o = pickWeighted<BloomObstacle>(level.weights.obstacles, 'fog');
           next[r][c] = newObstacleTile(o, r, c, true);
