@@ -12,6 +12,9 @@
   --c-pressure: #9CA3AF;
   --c-text: #303044;
   --c-text-soft: #6B6B82;
+  --c-match: #FF8FB3;
+  --c-tray: #E8AE5A;
+  --c-bloom: #9F7AEA;
 }
 
 html, body {
@@ -31,6 +34,7 @@ body {
     linear-gradient(160deg, #FFF7FB 0%, #F7F3FF 55%, #F0FFF4 100%);
   background-attachment: fixed;
   min-height: 100vh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 button { font-family: inherit; }
@@ -40,8 +44,38 @@ button { font-family: inherit; }
   user-select: none;
   -webkit-user-select: none;
 }
+.no-touch-scroll {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: contain;
+}
 
-/* ============ chip / card primitives ============ */
+/* ============ per-game background textures ============ */
+
+.match-texture {
+  /* clean diagonal stripes hint */
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,143,179,0.04) 0 14px, transparent 14px 28px);
+}
+.tray-texture {
+  /* desk grain - subtle paper + wood */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(184,140,80,0.05) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba(184,140,80,0.05) 0 1px, transparent 1px 22px);
+}
+.bloom-texture {
+  /* garden bokeh + soft pollen */
+  background-image:
+    radial-gradient(3px 3px at 20% 30%, rgba(255,255,255,0.7), transparent 60%),
+    radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,0.6), transparent 60%),
+    radial-gradient(4px 4px at 80% 70%, rgba(255,255,255,0.5), transparent 60%),
+    radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.6), transparent 60%);
+  background-size: 220px 220px, 320px 320px, 280px 280px, 260px 260px;
+}
+
+/* ============ chip primitives ============ */
 
 .chip-base {
   position: relative;
@@ -53,11 +87,11 @@ button { font-family: inherit; }
   box-shadow:
     inset 0 -2px 0 rgba(48, 48, 68, 0.06),
     0 2px 6px rgba(48, 48, 68, 0.10);
-  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 160ms;
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 160ms, filter 160ms;
 }
 .chip-base:active { transform: scale(0.96); }
 .chip-base.is-selected {
-  transform: scale(1.08);
+  transform: scale(1.10);
   box-shadow:
     0 0 0 3px var(--c-primary),
     0 6px 18px rgba(255, 143, 179, 0.35);
@@ -66,37 +100,68 @@ button { font-family: inherit; }
 .chip-base.is-chained {
   box-shadow:
     0 0 0 3px var(--c-highlight),
-    0 6px 18px rgba(249, 199, 79, 0.45);
+    0 6px 22px rgba(249, 199, 79, 0.55);
   z-index: 4;
+  transform: scale(1.08);
 }
-.chip-base.is-locked {
-  filter: grayscale(0.4);
-  opacity: 0.55;
-  cursor: not-allowed;
+.chip-base.is-dragging { transform: scale(1.12) rotate(-2deg); z-index: 6; }
+.chip-base.is-locked { filter: grayscale(0.4); opacity: 0.55; cursor: not-allowed; }
+
+/* match chip — energy block with shine */
+.energy-block {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.energy-block::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%);
+  pointer-events: none;
+}
+.energy-block::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 6px; right: 6px; height: 3px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.7);
+  pointer-events: none;
 }
 
-/* sticky-note card style for tray */
+/* sticky-note v2 — with tape strip + folded corner */
 .stickynote {
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+  position: relative;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FBF6EE 100%);
   box-shadow:
     inset 0 -3px 0 rgba(48, 48, 68, 0.05),
     0 6px 14px rgba(48, 48, 68, 0.10),
     0 1px 0 rgba(255,255,255,0.7);
-  position: relative;
   transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms;
 }
 .stickynote::before {
   content: '';
   position: absolute;
-  top: 0; left: 50%;
-  width: 24px; height: 6px;
+  top: -3px; left: 50%;
+  width: 30%; height: 8px;
   transform: translateX(-50%);
-  background: rgba(255, 143, 179, 0.45);
-  border-radius: 0 0 6px 6px;
+  background: rgba(255, 220, 100, 0.7);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(48,48,68,0.10);
 }
-.stickynote:hover { transform: translateY(-2px) rotate(-1deg); }
-.stickynote.is-locked { filter: grayscale(0.4) brightness(0.95); opacity: 0.55; transform: none; cursor: not-allowed; }
+.stickynote::after {
+  content: '';
+  position: absolute;
+  right: 0; bottom: 0;
+  border-style: solid;
+  border-width: 0 0 10px 10px;
+  border-color: transparent transparent rgba(48,48,68,0.12) transparent;
+  border-bottom-right-radius: 12px;
+}
+.stickynote:hover { transform: translateY(-2px) rotate(-1.5deg); }
+.stickynote.is-locked { filter: grayscale(0.5) brightness(0.92); opacity: 0.5; transform: none; cursor: not-allowed; }
 .stickynote.is-hint { box-shadow: 0 0 0 3px var(--c-highlight), 0 8px 18px rgba(249,199,79,0.4); }
 
 /* ============ keyframes ============ */
@@ -161,6 +226,19 @@ button { font-family: inherit; }
   0%, 100% { box-shadow: 0 0 0 rgba(229, 62, 62, 0); }
   50% { box-shadow: 0 0 18px rgba(229, 62, 62, 0.55); }
 }
+@keyframes line-draw {
+  from { stroke-dashoffset: 200; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drift {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(3px,-4px); }
+  100% { transform: translate(0,0); }
+}
+@keyframes flower-breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
 
 .animate-bloom-pop { animation: bloom-pop 540ms ease-out forwards; }
 .animate-tile-appear { animation: tile-appear 240ms ease-out both; }
@@ -175,8 +253,11 @@ button { font-family: inherit; }
 .animate-ring-pulse { animation: ring-pulse 700ms ease-out forwards; }
 .animate-toast-rise { animation: toast-rise 1400ms ease-out forwards; }
 .animate-warn-pulse { animation: warn-pulse 1.2s ease-in-out infinite; }
+.animate-line-draw { animation: line-draw 300ms linear forwards; }
+.animate-drift { animation: drift 5s ease-in-out infinite; }
+.animate-flower-breath { animation: flower-breath 3.6s ease-in-out infinite; }
 
-.glow-pink { box-shadow: 0 0 14px rgba(255, 143, 179, 0.55); }
-.glow-gold { box-shadow: 0 0 14px rgba(249, 199, 79, 0.65); }
-.glow-sky  { box-shadow: 0 0 14px rgba(139, 211, 221, 0.55); }
-.glow-lavender { box-shadow: 0 0 14px rgba(159, 122, 234, 0.55); }
+.glow-pink     { box-shadow: 0 0 14px rgba(255, 143, 179, 0.55); }
+.glow-gold     { box-shadow: 0 0 14px rgba(249, 199, 79, 0.65); }
+.glow-sky      { box-shadow: 0 0 14px rgba(139, 211, 221, 0.55); }
+.glow-lavender { box-shadow: 0 0 16px rgba(159, 122, 234, 0.55); }
