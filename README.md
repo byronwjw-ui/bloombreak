@@ -2,22 +2,20 @@
 
 > 给高压职场人的 3 分钟解压游戏合集。
 
-一个原创的 Web 轻游戏合集 MVP，包含三个独立可玩的小游戏：
+v2【3 个独立游戏 + 原创 chip 视觉 + 道具 + 星级】
 
-| 游戏 | 路由 | 玩法 |
+| 游戏 | 路由 | 特性 |
 |---|---|---|
-| 压力消消班 | `/games/match` | 8x8 交换三消 + 关卡目标 |
-| 压力收纳所 | `/games/tray` | 7 格压力托盘 + 多层遮挡收纳 |
-| 偷偷开花局 | `/games/bloom` | 拖动连接同类花朵 + 成长 + 3x3 爆花连锁 |
-
-三个游戏共享同一个【我的花园】，奖励累计在 `/garden`。
+| 压力消消班 | `/games/match` | 8×8 交换三消、特殊方块（横扫/竖扫/冲击/吸尘）、阻碍物 |
+| 压力收纳所 | `/games/tray` | 多层便利贴、托盘预警、撤回/洗牌/提示道具 |
+| 偷偷开花局 | `/games/bloom` | 4 种花×4 阶段 SVG、拖动连接、sunburst、连锁爆花、胜利花瓣飘落 |
 
 ## 技术栈
 
 - Next.js 14 (App Router)
 - React 18 + TypeScript
 - Tailwind CSS
-- localStorage（无后端、无登录、无支付）
+- localStorage
 
 ## 本地开发
 
@@ -26,45 +24,41 @@ npm install
 npm run dev
 ```
 
-打开 http://localhost:3000 。
+## 部署
 
-Node 推荐 20（仓库内附 `.nvmrc`）。
-
-## 部署到 Vercel
-
-1. https://vercel.com/new 选 `byronwjw-ui/bloombreak` → Import
-2. Framework 自动识别为 Next.js，所有选项保持默认
-3. 不需要环境变量
-4. 点 Deploy
+https://vercel.com/new 选 `byronwjw-ui/bloombreak` → Import → Deploy。
+无需任何环境变量。
 
 ## 目录
 
 ```
 src/
+  design/tokens.ts         设计系统唯一来源
   app/
     page.tsx               三游戏 hub 首页
-    games/
-      match/page.tsx       压力消消班
-      tray/page.tsx        压力收纳所
-      bloom/page.tsx       偷偷开花局
-    garden/page.tsx        共享花园
-    game/page.tsx          旧路由 → redirect 到 /games/match
+    games/match/page.tsx   压力消消班 v2
+    games/tray/page.tsx    压力收纳所 v2
+    games/bloom/page.tsx   偷偷开花局 v2
+    garden/page.tsx        花园
+    game/page.tsx          旧路由 → /games/match
   components/
-    PrimaryButton / MoodSelector / GardenView / ResultModal
+    SoftButton / ProgressStars / DifficultyBadge / GoalChip
+    GameShell / LevelHeader / GoalPanel / FeedbackToast / LevelStrip
+    chips/MatchChip / TrayCardChip / BloomChip
   data/
-    matchLevels.ts  trayLevels.ts  bloomLevels.ts
-    tiles.ts        copy.ts
+    matchLevels2.ts  trayLevels2.ts  bloomLevels2.ts
+    copy.ts
   lib/
-    matchEngine.ts  trayEngine.ts  bloomEngine.ts
-    storage.ts      random.ts
+    matchEngine2.ts  trayEngine2.ts  bloomEngine2.ts
+    storage.ts (v2 + v1 migration)  random.ts
   types/game.ts
 ```
 
 ## 原创性声明
 
 - 不使用任何现有游戏 IP、名称、素材或文案
-- 三个游戏机制均为职场解压主题原创设计
-- emoji 作为占位视觉，后续可替换为原创插画
+- 三个游戏机制、视觉、文案均为原创职场解压设计
+- chip / card 均为原创 CSS/SVG，emoji 仅作点缀
 
 ---
 
