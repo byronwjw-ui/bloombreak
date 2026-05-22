@@ -100,3 +100,8 @@ export type GoalProgress = {
   done: boolean;
   label: string;
 };
+
+export type GoalCounters = {
+  clearedByType: Partial<Record<TileType, number>>;
+  pressureClearedByType: Partial<Record<PressureType, number>>;
+};
