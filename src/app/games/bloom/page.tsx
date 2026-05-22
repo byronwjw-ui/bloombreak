@@ -44,12 +44,7 @@ function goalLabel(g: BloomGoal): { label: string; icon: string } {
   return { label: '清枯叶', icon: '♻' };
 }
 
-const FLOWER_COLOR = {
-  rose: '#FF7AA5',
-  lavender: '#9F7AEA',
-  sunflower: '#F9C74F',
-  clover: '#6FCB7E',
-};
+const FLOWER_COLOR = { rose: '#FF7AA5', lavender: '#9F7AEA', sunflower: '#F9C74F', clover: '#6FCB7E' };
 
 function BloomInner() {
   const router = useRouter();
@@ -84,33 +79,21 @@ function BloomInner() {
 
   const reset = useCallback(() => {
     setBoard(createBloomBoard(level));
-    setChain([]);
-    setTip(null);
-    setStaggeredKeys(new Set());
-    setScore(0);
-    setMovesLeft(level.moves);
+    setChain([]); setTip(null); setStaggeredKeys(new Set());
+    setScore(0); setMovesLeft(level.moves);
     setCounters({ bloomCount: 0, chainCount: 0, fogCleared: 0, leavesCleared: 0 });
-    setBusy(false);
-    setStatus('playing');
-    setExplodingKeys(new Set());
-    setResultMessage('');
-    setResultStars(0);
-    setToasts([]);
-    setShowPetals(false);
-    setBigBurst(null);
-    finishedRef.current = false;
-    draggingRef.current = false;
+    setBusy(false); setStatus('playing'); setExplodingKeys(new Set());
+    setResultMessage(''); setResultStars(0); setToasts([]); setShowPetals(false); setBigBurst(null);
+    finishedRef.current = false; draggingRef.current = false;
   }, [level]);
 
   useEffect(() => { reset(); }, [levelId, reset]);
 
-  const goalViews: GoalView[] = useMemo(() => {
-    return level.goals.map((g) => {
-      const d = goalLabel(g);
-      const cur = goalCurrent(g, counters, score);
-      return { label: d.label, icon: d.icon, current: cur, target: g.target, done: cur >= g.target };
-    });
-  }, [level, counters, score]);
+  const goalViews: GoalView[] = useMemo(() => level.goals.map((g) => {
+    const d = goalLabel(g);
+    const cur = goalCurrent(g, counters, score);
+    return { label: d.label, icon: d.icon, current: cur, target: g.target, done: cur >= g.target };
+  }), [level, counters, score]);
   const allDone = goalViews.every((g) => g.done);
 
   const finishWin = useCallback(() => {
@@ -119,8 +102,7 @@ function BloomInner() {
     const stars = computeStars(score, level.stars);
     setResultStars(stars);
     const r = applyWin({ kind: 'bloom', levelId, score, pressureCleared: counters.fogCleared + counters.leavesCleared, bloomCount: counters.bloomCount, stars });
-    setReward(r);
-    setResultMessage(pickOne(winMessages));
+    setReward(r); setResultMessage(pickOne(winMessages));
     setShowPetals(true);
     setTimeout(() => setStatus('won'), 700);
   }, [levelId, score, counters, level.stars]);
@@ -132,8 +114,7 @@ function BloomInner() {
     setReward(r);
     const closeGoals = goalViews.filter((g) => !g.done && g.current / g.target >= 0.7).length;
     const msg = closeGoals > 0 ? `${pickOne(nearWinMessages)}\n${pickOne(loseMessages)}` : pickOne(loseMessages);
-    setResultMessage(msg);
-    setStatus('lost');
+    setResultMessage(msg); setStatus('lost');
   }, [counters, goalViews]);
 
   useEffect(() => {
@@ -146,10 +127,8 @@ function BloomInner() {
     const el = boardRef.current;
     if (!el) return { pos: null, pct: null };
     const rect = el.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-    const pctX = (x / rect.width) * 100;
-    const pctY = (y / rect.height) * 100;
+    const x = clientX - rect.left, y = clientY - rect.top;
+    const pctX = (x / rect.width) * 100, pctY = (y / rect.height) * 100;
     if (x < 0 || y < 0 || x > rect.width || y > rect.height) return { pos: null, pct: { x: pctX, y: pctY } };
     const size = level.size;
     const col = Math.floor((x / rect.width) * size);
@@ -181,33 +160,19 @@ function BloomInner() {
   const release = useCallback(async () => {
     if (busy) return;
     const c = chain;
-    setChain([]);
-    setTip(null);
-    draggingRef.current = false;
+    setChain([]); setTip(null); draggingRef.current = false;
     if (c.length < 3) return;
-
     setBusy(true);
-
-    // STAGGERED PATH GLOW: brighten each path cell one by one
     for (let i = 0; i < c.length; i++) {
       const k = `${c[i].row}_${c[i].col}`;
-      setStaggeredKeys((prev) => {
-        const next = new Set(prev);
-        next.add(k);
-        return next;
-      });
+      setStaggeredKeys((prev) => { const next = new Set(prev); next.add(k); return next; });
       await delay(60);
     }
-
     setMovesLeft((m) => Math.max(0, m - 1));
-
     const result = releaseChain(board, c);
     let nextBoard = result.board;
     const keys = new Set<string>(result.removedPositions.map((p) => `${p.row}_${p.col}`));
-    setExplodingKeys(keys);
-    setBoard(nextBoard);
-    setStaggeredKeys(new Set());
-
+    setExplodingKeys(keys); setBoard(nextBoard); setStaggeredKeys(new Set());
     if (c.length >= 6) pushToast(pickOne(bloomLongChain), 'bloom');
     else if (c.length === 5) pushToast(pickOne(bloomLongChain), 'milestone');
     if (result.chainCount > 0) {
@@ -217,20 +182,13 @@ function BloomInner() {
     if (result.sunburstAt) {
       pushToast('Sunburst ✦', 'milestone');
       const cellPct = 100 / level.size;
-      setBigBurst({
-        x: result.sunburstAt.col * cellPct + cellPct / 2,
-        y: result.sunburstAt.row * cellPct + cellPct / 2,
-      });
+      setBigBurst({ x: result.sunburstAt.col * cellPct + cellPct / 2, y: result.sunburstAt.row * cellPct + cellPct / 2 });
       setTimeout(() => setBigBurst(null), 700);
     }
-
     await delay(420);
-
     nextBoard = collapseAndRefill(nextBoard, level);
-    setExplodingKeys(new Set());
-    setBoard(nextBoard);
+    setExplodingKeys(new Set()); setBoard(nextBoard);
     await delay(160);
-
     setScore((s) => s + result.scoreGained);
     setCounters((prev) => ({
       bloomCount: prev.bloomCount + result.bloomsTriggered,
@@ -246,9 +204,7 @@ function BloomInner() {
     e.preventDefault();
     const { pos, pct } = cellFromEvent(e.clientX, e.clientY);
     if (!pos) return;
-    setChain([]);
-    setTip(pct);
-    draggingRef.current = true;
+    setChain([]); setTip(pct); draggingRef.current = true;
     tryAddToChain(pos);
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
   };
@@ -258,10 +214,7 @@ function BloomInner() {
     setTip(pct);
     if (pos) tryAddToChain(pos);
   };
-  const onPointerUp = () => {
-    if (!draggingRef.current) return;
-    release();
-  };
+  const onPointerUp = () => { if (!draggingRef.current) return; release(); };
 
   const goNext = () => router.push(`/games/bloom?level=${Math.min(levelId + 1, BLOOM_MAX_LEVEL_V2)}`);
   const goGarden = () => router.push('/garden');
@@ -327,25 +280,16 @@ function BloomInner() {
                 if (!tile) return <div key={key} className="aspect-square rounded-xl bg-transparent" />;
                 return (
                   <div key={tile.id} className={stagger ? 'animate-grow-pop' : ''}>
-                    <BloomChip
-                      chip={tile.data}
-                      chained={chained}
-                      chainOrder={idx}
-                      exploding={exp}
-                      isNew={tile.isNew}
-                    />
+                    <BloomChip chip={tile.data} chained={chained} chainOrder={idx} exploding={exp} isNew={tile.isNew} />
                   </div>
                 );
               })
             )}
           </div>
           <ConnectionLine chain={chain} size={level.size} tip={chain.length > 0 ? tip : null} color={chainColor} />
-          {/* sunburst big ring */}
           {bigBurst && (
-            <div
-              className="pointer-events-none absolute z-[8]"
-              style={{ left: `${bigBurst.x}%`, top: `${bigBurst.y}%`, transform: 'translate(-50%, -50%)' }}
-            >
+            <div className="pointer-events-none absolute z-[8]"
+                 style={{ left: `${bigBurst.x}%`, top: `${bigBurst.y}%`, transform: 'translate(-50%, -50%)' }}>
               <span className="block w-20 h-20 rounded-full animate-ring-pulse"
                 style={{ background: 'radial-gradient(circle,rgba(249,199,79,0.6),transparent 70%)' }} />
             </div>
@@ -357,12 +301,7 @@ function BloomInner() {
         <div className="flex-1 rounded-2xl bg-white/75 backdrop-blur px-3 py-2 text-[11px] text-[#6B6B82] shadow-[0_2px_8px_rgba(48,48,68,0.06)]">
           💡 按住一朵花，拖过相邻同类，松手释放（≥3 个）。
         </div>
-        <SoftButton
-          variant={chain.length >= 5 ? 'lavender' : 'primary'}
-          size="md"
-          onClick={release}
-          disabled={chain.length < 3 || busy}
-        >
+        <SoftButton variant={chain.length >= 5 ? 'lavender' : 'primary'} size="md" onClick={release} disabled={chain.length < 3 || busy}>
           释放 {chain.length >= 3 ? `(${chain.length})` : ''}
         </SoftButton>
       </div>
@@ -373,15 +312,8 @@ function BloomInner() {
       {showPetals && (
         <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
           {Array.from({ length: 28 }).map((_, i) => (
-            <span
-              key={i}
-              className="absolute animate-petal-fall text-3xl"
-              style={{
-                left: `${(i * 37) % 100}%`,
-                top: `-5%`,
-                animationDelay: `${(i % 8) * 0.1}s`,
-              }}
-            >
+            <span key={i} className="absolute animate-petal-fall text-3xl"
+              style={{ left: `${(i * 37) % 100}%`, top: `-5%`, animationDelay: `${(i % 8) * 0.1}s` }}>
               {['🌸', '🌼', '🌷', '🌹', '💮'][i % 5]}
             </span>
           ))}
@@ -397,6 +329,7 @@ function BloomInner() {
           reward={reward}
           message={resultMessage}
           stars={resultStars}
+          starThresholds={level.stars}
           hasNextLevel={levelId < BLOOM_MAX_LEVEL_V2}
           onNext={levelId < BLOOM_MAX_LEVEL_V2 ? goNext : undefined}
           onRetry={reset}
