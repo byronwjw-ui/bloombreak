@@ -7,6 +7,7 @@ import LevelHeader from '@/components/LevelHeader';
 import GoalPanel, { type GoalView } from '@/components/GoalPanel';
 import ResultModal from '@/components/ResultModal';
 import TrayCardChip from '@/components/chips/TrayCardChip';
+import DeskSurface from '@/components/DeskSurface';
 import FeedbackToast, { makeToast, type ToastItem } from '@/components/FeedbackToast';
 import LevelStrip from '@/components/LevelStrip';
 import { TRAY_LEVELS_V2, TRAY_MAX_LEVEL_V2, getTrayLevelV2 } from '@/data/trayLevels2';
@@ -44,6 +45,7 @@ function TrayInner() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const finishedRef = useRef(false);
   const warnShownRef = useRef(false);
+  const desktopRevealedRef = useRef(false);
 
   const pushToast = useCallback((text: string, kind: ToastItem['kind'] = 'milestone') => {
     setToasts((arr) => [...arr.slice(-2), makeToast(text, kind)]);
@@ -63,6 +65,7 @@ function TrayInner() {
     setToasts([]);
     finishedRef.current = false;
     warnShownRef.current = false;
+    desktopRevealedRef.current = false;
   }, [level]);
 
   useEffect(() => { reset(); }, [levelId, reset]);
@@ -127,7 +130,13 @@ function TrayInner() {
       warnShownRef.current = true;
       pushToast(trayWarn, 'warn');
     }
-  }, [state, status, traySize, pushToast, finishWin, finishLose]);
+    // desktop-revealed milestone at ~80% removed
+    const newRemoved = totalCards - (result.state.remainingCards.length + result.state.tray.length);
+    if (!desktopRevealedRef.current && newRemoved / totalCards >= 0.8) {
+      desktopRevealedRef.current = true;
+      pushToast('桌面快露出来了', 'milestone');
+    }
+  }, [state, status, traySize, pushToast, finishWin, finishLose, totalCards]);
 
   const useUndo = () => {
     if (items.undo <= 0 || state.history.length === 0) return;
@@ -158,6 +167,7 @@ function TrayInner() {
 
   const traySlots = useMemo(() => Array.from({ length: traySize }, (_, i) => state.tray[i] ?? null), [state.tray, traySize]);
   const trayAlert = state.tray.length >= traySize - 1;
+  const trayStrongAlert = state.tray.length >= traySize;
 
   return (
     <GameShell
@@ -184,7 +194,7 @@ function TrayInner() {
 
       {/* desk surface */}
       <div
-        className="relative rounded-3xl mx-auto overflow-hidden shadow-[0_12px_28px_rgba(120,90,40,0.16)] tray-texture"
+        className="relative rounded-3xl mx-auto overflow-hidden shadow-[0_12px_28px_rgba(120,90,40,0.20)] tray-texture"
         style={{
           width: 'min(94vw, 432px)',
           height: 'min(94vw, 432px)',
@@ -192,10 +202,12 @@ function TrayInner() {
             'radial-gradient(110% 70% at 50% 0%, #FFF3D9 0%, #FAE0AF 70%, #F3CC81 100%)',
         }}
       >
-        {/* faux desk lines */}
+        {/* faux desk wood grain */}
         <div className="absolute inset-0 pointer-events-none opacity-25" style={{
-          backgroundImage: 'repeating-linear-gradient(90deg, rgba(120,90,40,0.20) 0 1px, transparent 1px 36px)'
+          backgroundImage: 'repeating-linear-gradient(90deg, rgba(120,90,40,0.20) 0 1px, transparent 1px 36px), repeating-linear-gradient(0deg, rgba(120,90,40,0.10) 0 1px, transparent 1px 24px)'
         }} />
+        {/* desk decorations layer */}
+        <DeskSurface />
         {/* cards */}
         {state.remainingCards.map((card) => {
           const clickable = isCardClickable(card, state);
@@ -210,11 +222,12 @@ function TrayInner() {
               style={{
                 left: `${card.x}%`,
                 top: `${card.y}%`,
-                zIndex: card.layer + 1,
+                zIndex: card.layer + 10,
                 position: 'absolute',
-                transform: `translate(-50%, -50%) rotate(${(card.layer % 2 === 0 ? -1 : 1) * (1 + card.layer)}deg)`,
+                transform: `translate(-50%, -50%) rotate(${(card.layer % 2 === 0 ? -1.5 : 1.5) * (1 + card.layer * 0.6)}deg)`,
                 width: '17%',
                 height: '17%',
+                filter: clickable ? 'none' : 'brightness(0.85)',
               }}
               className="touch-manipulation"
             >
@@ -240,12 +253,15 @@ function TrayInner() {
         className={[
           'w-full rounded-2xl bg-white/90 backdrop-blur px-3 py-2 shadow-[0_8px_18px_rgba(48,48,68,0.10)]',
           flashing ? 'animate-tray-flash' : '',
-          trayAlert ? 'ring-2 ring-[#FCA5A5] animate-warn-pulse' : '',
+          trayStrongAlert ? 'ring-4 ring-[#F87171] animate-warn-pulse'
+            : trayAlert ? 'ring-2 ring-[#FCA5A5] animate-warn-pulse' : '',
         ].join(' ')}
       >
         <div className="flex items-center justify-between mb-1.5 px-1">
           <div className="text-xs text-[#6B6B82] font-semibold">压力托盘</div>
-          <div className="text-[10px] text-[#9C9CB0]">三个相同自动归档</div>
+          <div className={`text-[10px] font-semibold ${trayStrongAlert ? 'text-[#B91C1C]' : trayAlert ? 'text-[#C2410C]' : 'text-[#9C9CB0]'}`}>
+            {trayStrongAlert ? '小心，下一张就满' : trayAlert ? '托盘快满了' : '三个相同自动归档'}
+          </div>
         </div>
         <div className="grid grid-cols-7 gap-1.5">
           {traySlots.map((card, i) => (
