@@ -6,6 +6,8 @@ import type { RewardSummary } from '@/lib/storage';
 
 export type ResultKind = 'won' | 'lost';
 
+type StarThresholds = { two: number; three: number };
+
 type Props = {
   kind: ResultKind;
   score: number;
@@ -14,6 +16,8 @@ type Props = {
   reward: RewardSummary;
   message: string;
   stars?: number;
+  /** if provided, modal shows a "差 N 分到 X 星" hint */
+  starThresholds?: StarThresholds;
   easterEgg?: string;
   hasNextLevel: boolean;
   onNext?: () => void;
@@ -23,10 +27,19 @@ type Props = {
 };
 
 export default function ResultModal({
-  kind, score, pressureCleared, bloomCount, reward, message, stars = 0, easterEgg,
+  kind, score, pressureCleared, bloomCount, reward, message, stars = 0, starThresholds, easterEgg,
   hasNextLevel, onNext, onRetry, onGarden, onHome,
 }: Props) {
   const won = kind === 'won';
+  // gap hint
+  let gapHint: string | null = null;
+  if (won && starThresholds) {
+    if (stars < 3) {
+      const nextTarget = stars === 1 ? starThresholds.two : starThresholds.three;
+      const need = nextTarget - score;
+      if (need > 0) gapHint = `再 ${need} 分就能拿 ${stars + 1} 星`;
+    }
+  }
   return (
     <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/35 backdrop-blur-sm px-4 pb-4">
       <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-[0_12px_36px_rgba(48,48,68,0.18)] animate-modal-in">
@@ -37,6 +50,11 @@ export default function ResultModal({
           </h2>
           {won && stars > 0 && (
             <div className="mt-2 flex justify-center"><ProgressStars filled={stars} size="lg" /></div>
+          )}
+          {gapHint && (
+            <p className="mt-1 text-[11px] text-[#876413] bg-[#FFF4DA] inline-block px-2 py-1 rounded-full">
+              {gapHint}
+            </p>
           )}
           <p className="mt-2 text-sm text-[#6B6B82] whitespace-pre-line leading-relaxed">{message}</p>
           {easterEgg && (
