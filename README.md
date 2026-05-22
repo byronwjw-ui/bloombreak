@@ -1,65 +1,44 @@
 # Bloom Break / 解压花园
 
-> 给高压职场人的 3 分钟解压游戏合集。
+> 给高压职场朋友的免费解压礼物 · 三款独立可玩的原创小游戏。
 
-v2【3 个独立游戏 + 原创 chip 视觉 + 道具 + 星级】
+## 三个游戏
 
-| 游戏 | 路由 | 特性 |
+| 游戏 | 路由 | 核心手感 |
 |---|---|---|
-| 压力消消班 | `/games/match` | 8×8 交换三消、特殊方块（横扫/竖扫/冲击/吸尘）、阻碍物 |
-| 压力收纳所 | `/games/tray` | 多层便利贴、托盘预警、撤回/洗牌/提示道具 |
-| 偷偷开花局 | `/games/bloom` | 4 种花×4 阶段 SVG、拖动连接、sunburst、连锁爆花、胜利花瓣飘落 |
+| 压力消消班 | `/games/match` | **拖拽 / 滑动**交换 · 8x8 三消 · 特殊方块 · 阻碍物 |
+| 压力收纳所 | `/games/tray` | 层叠便利贴 · 7 格托盘 · 三同归档 · 撤回/洗牌/提示 |
+| 偷偷开花局 | `/games/bloom` | **按住拖动**连接 · 8 方向 · sunburst · 连锁爆花 |
+
+三个游戏视觉、机制、纹理、节奏全部独立，不是一套 UI 换皮。
 
 ## 技术栈
-
-- Next.js 14 (App Router)
-- React 18 + TypeScript
+- Next.js 14 (App Router) + React 18 + TypeScript
 - Tailwind CSS
-- localStorage
+- localStorage（无后端 / 无登录 / 无支付 / 无 AI API）
 
 ## 本地开发
-
 ```bash
 npm install
 npm run dev
 ```
 
-## 部署
+Node 推荐 20（`.nvmrc` 已附）。
 
-https://vercel.com/new 选 `byronwjw-ui/bloombreak` → Import → Deploy。
+## 部署
+https://vercel.com/new → 选 `byronwjw-ui/bloombreak` → Import → Deploy。
 无需任何环境变量。
 
-## 目录
-
-```
-src/
-  design/tokens.ts         设计系统唯一来源
-  app/
-    page.tsx               三游戏 hub 首页
-    games/match/page.tsx   压力消消班 v2
-    games/tray/page.tsx    压力收纳所 v2
-    games/bloom/page.tsx   偷偷开花局 v2
-    garden/page.tsx        花园
-    game/page.tsx          旧路由 → /games/match
-  components/
-    SoftButton / ProgressStars / DifficultyBadge / GoalChip
-    GameShell / LevelHeader / GoalPanel / FeedbackToast / LevelStrip
-    chips/MatchChip / TrayCardChip / BloomChip
-  data/
-    matchLevels2.ts  trayLevels2.ts  bloomLevels2.ts
-    copy.ts
-  lib/
-    matchEngine2.ts  trayEngine2.ts  bloomEngine2.ts
-    storage.ts (v2 + v1 migration)  random.ts
-  types/game.ts
-```
-
-## 原创性声明
-
+## 原创声明
 - 不使用任何现有游戏 IP、名称、素材或文案
-- 三个游戏机制、视觉、文案均为原创职场解压设计
-- chip / card 均为原创 CSS/SVG，emoji 仅作点缀
+- 三个游戏的视觉（CSS 能量块 / 便利贴 SVG / 花朵 SVG）均为原创
+- chip、连线、爆花动画均为原创实现
+- 文案为职场解压主题原创
+
+## 礼物感
+- 私人语气文案
+- 彩蛋：连续失败 2 次 / 玩满 3 局 / 通关 Level 12
+- 失败 near-win 安慰文案，永远不羞辱用户
 
 ---
-
-送给高压职场朋友的免费解压礼物 · 原创 MVP。
+送给职场朋友的免费解压礼物 · 原创 MVP。
