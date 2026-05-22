@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { Position, Tile as TileT } from '@/types/game';
+import type { Position } from '@/types/game';
+import type { Board } from '@/lib/gameLogic';
 import Tile from './Tile';
 import { isAdjacent } from '@/lib/gameLogic';
 
 type Props = {
-  board: TileT[][];
+  board: Board;
   explodingKeys: Set<string>;
   disabled?: boolean;
   onSwap: (a: Position, b: Position) => void;
@@ -15,12 +16,10 @@ type Props = {
 export default function GameBoard({ board, explodingKeys, disabled, onSwap }: Props) {
   const [selected, setSelected] = useState<Position | null>(null);
 
-  // clear selection if board got externally reset
   useEffect(() => {
     if (disabled) setSelected(null);
   }, [disabled]);
 
-  const rows = board.length;
   const cols = board[0]?.length ?? 0;
 
   const handleClick = (pos: Position) => {
@@ -37,7 +36,6 @@ export default function GameBoard({ board, explodingKeys, disabled, onSwap }: Pr
       onSwap(selected, pos);
       setSelected(null);
     } else {
-      // re-anchor selection
       setSelected(pos);
     }
   };
@@ -45,7 +43,6 @@ export default function GameBoard({ board, explodingKeys, disabled, onSwap }: Pr
   const gridStyle = useMemo(
     () => ({
       gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-      width: 'min(92vw, 420px)',
     }),
     [cols]
   );
@@ -59,16 +56,11 @@ export default function GameBoard({ board, explodingKeys, disabled, onSwap }: Pr
         {board.map((row, r) =>
           row.map((tile, c) => {
             const key = `${r}_${c}`;
-            const isSelected =
-              !!selected && selected.row === r && selected.col === c;
+            const isSelected = !!selected && selected.row === r && selected.col === c;
             const exploding = explodingKeys.has(key);
-            // tile may be null between removal & refill - guard
             if (!tile) {
               return (
-                <div
-                  key={key}
-                  className="aspect-square rounded-xl bg-transparent"
-                />
+                <div key={key} className="aspect-square rounded-xl bg-transparent" />
               );
             }
             return (
