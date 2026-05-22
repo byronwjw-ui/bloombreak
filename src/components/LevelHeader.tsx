@@ -9,13 +9,30 @@ type Props = {
   traySize: number;
 };
 
+const MOOD_BADGE: Record<string, { label: string; emoji: string }> = {
+  meeting: { label: '会议日', emoji: '💬' },
+  deadline: { label: 'DDL模式', emoji: '⏰' },
+  messages: { label: '消息洪', emoji: '📨' },
+  kpi: { label: 'KPI周', emoji: '📈' },
+  burnout: { label: '低电量', emoji: '🌫️' },
+  relax: { label: '放空中', emoji: '🍃' },
+};
+
 export default function LevelHeader({ level, stats, trayCount, traySize }: Props) {
   const pressurePct = Math.min(100, Math.round((trayCount / traySize) * 100));
+  const badge = MOOD_BADGE[level.mood];
   return (
     <div className="w-full rounded-2xl bg-white/70 backdrop-blur px-4 py-3 shadow-tile">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-xs text-[#9090a0]">Level {level.id}</div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#9090a0]">Level {level.id}</span>
+            {badge && (
+              <span className="text-[10px] rounded-full bg-[#FFF1F6] text-[#FF8FB3] px-2 py-0.5">
+                {badge.emoji} {badge.label}
+              </span>
+            )}
+          </div>
           <div className="text-base sm:text-lg font-bold text-[#3A3A4A] leading-tight">
             {level.name}
           </div>
