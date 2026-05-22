@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties } from 'react';
+import SpecialTileIcon from './SpecialTileIcon';
 
 export type MatchChipType =
   | 'coffee' | 'mail' | 'calendar' | 'note' | 'focus' | 'leaf'
@@ -20,10 +21,10 @@ const META: Record<MatchChipType, Meta> = {
   meeting:  { label: '会议', bg: 'linear-gradient(160deg,#C7C1EF,#8E81D6)', fg: '#241965', ring: '#7466C2', mark: '◐' },
   kpi:      { label: 'KPI',  bg: 'linear-gradient(160deg,#DDB8F9,#B584E8)', fg: '#3a106e', ring: '#9F6FCC', mark: '↗' },
   fog:      { label: '内耗', bg: 'linear-gradient(160deg,#D6D8DD,#9AA0AB)', fg: '#1f2530', ring: '#7C8290', mark: '~' },
-  line_h:   { label: '横扫', bg: 'linear-gradient(90deg,#FFD1E0,#FF8FB3 50%,#FFD1E0)', fg: '#fff', ring: '#FF8FB3', mark: '⇔' },
-  line_v:   { label: '竖扫', bg: 'linear-gradient(180deg,#FFD1E0,#FF8FB3 50%,#FFD1E0)', fg: '#fff', ring: '#FF8FB3', mark: '⇕' },
-  bomb:     { label: '冲击', bg: 'radial-gradient(circle at 30% 30%,#FFE0EC,#FF8FB3 80%)', fg: '#fff', ring: '#FF8FB3', mark: '✸' },
-  vacuum:   { label: '吸尘', bg: 'conic-gradient(from 0deg,#FFE0EC,#9F7AEA,#8BD3DD,#FFE0EC)', fg: '#fff', ring: '#9F7AEA', mark: '◉' },
+  line_h:   { label: '横扫', bg: 'linear-gradient(90deg,#FFD1E0 0%,#FF5588 50%,#FFD1E0 100%)', fg: '#fff', ring: '#FF5588', mark: '' },
+  line_v:   { label: '竖扫', bg: 'linear-gradient(180deg,#FFD1E0 0%,#FF5588 50%,#FFD1E0 100%)', fg: '#fff', ring: '#FF5588', mark: '' },
+  bomb:     { label: '冲击', bg: 'radial-gradient(circle at 30% 30%,#FFE0EC,#E14F84 80%)', fg: '#fff', ring: '#E14F84', mark: '' },
+  vacuum:   { label: '吸尘', bg: 'conic-gradient(from 0deg,#FFE0EC,#9F7AEA,#8BD3DD,#FFE598,#FFE0EC)', fg: '#fff', ring: '#9F7AEA', mark: '' },
 };
 
 export const MATCH_CHIP_TYPES: MatchChipType[] = Object.keys(META) as MatchChipType[];
@@ -65,19 +66,26 @@ export default function MatchChip({ type, selected, dragging, exploding, isNew, 
         dragging ? 'is-dragging' : '',
         exploding ? 'animate-bloom-pop' : '',
         isNew ? 'animate-tile-appear' : '',
-        special ? 'ring-2 ring-white/70' : '',
+        special ? 'ring-2 ring-white/80 shadow-[0_0_18px_rgba(255,143,179,0.55)]' : '',
       ].join(' ')}
       style={style}
     >
       <span className="pointer-events-none flex flex-col items-center justify-center leading-none z-[1]">
-        <span className={[
-          'font-extrabold leading-none',
-          'text-base sm:text-xl',
-          special ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]' : 'drop-shadow-[0_1px_0_rgba(255,255,255,0.5)]',
-        ].join(' ')}>
-          {meta.mark}
-        </span>
-        <span className="text-[8px] sm:text-[10px] opacity-80 mt-0.5 font-semibold tracking-wide">{meta.label}</span>
+        {special ? (
+          <>
+            <SpecialTileIcon kind={type as 'line_h' | 'line_v' | 'bomb' | 'vacuum'} />
+            <span className="text-[8px] sm:text-[10px] opacity-90 mt-0.5 font-extrabold tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+              {meta.label}
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="text-base sm:text-xl font-extrabold drop-shadow-[0_1px_0_rgba(255,255,255,0.5)]">
+              {meta.mark}
+            </span>
+            <span className="text-[8px] sm:text-[10px] opacity-80 mt-0.5 font-semibold tracking-wide">{meta.label}</span>
+          </>
+        )}
       </span>
 
       {special && (
