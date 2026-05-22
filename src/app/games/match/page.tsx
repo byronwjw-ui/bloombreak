@@ -86,7 +86,7 @@ function MatchInner() {
   const [resultStars, setResultStars] = useState(0);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [dragFrom, setDragFrom] = useState<Position | null>(null);
-  const [tapSelected, setTapSelected] = useState<Position | null>(null); // click fallback
+  const [tapSelected, setTapSelected] = useState<Position | null>(null);
   const dragStartPx = useRef<{ x: number; y: number } | null>(null);
   const dragCommittedRef = useRef(false);
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -184,7 +184,6 @@ function MatchInner() {
           if (msg) pushToast(msg, 'milestone');
         }
         addScore += trig.removed.length * 60;
-        // gravity
         for (let c = 0; c < current[0].length; c++) {
           const stack = [];
           for (let r = current.length - 1; r >= 0; r--) {
@@ -260,14 +259,12 @@ function MatchInner() {
     });
   }, [level, pushToast]);
 
-  /* -------- attempt a swap -------- */
   const attemptSwap = useCallback(async (a: Position, b: Position) => {
     if (busy || status !== 'playing') return;
     if (!isAdjacent(a, b)) return;
     setBusy(true);
     const aCell = board[a.row][a.col];
     const bCell = board[b.row][b.col];
-    // special swap triggers immediately
     if (aCell && isSpecial(aCell.type)) {
       setMovesLeft((m) => Math.max(0, m - 1));
       await runCascade(board, a);
@@ -285,7 +282,6 @@ function MatchInner() {
     await delay(140);
     const matches = findMatches(swapped);
     if (matches.length === 0) {
-      // bounce back
       setBoard(board);
       setBusy(false);
       return;
@@ -295,7 +291,6 @@ function MatchInner() {
     setBusy(false);
   }, [board, busy, runCascade, status]);
 
-  /* -------- pointer interactions: drag-swipe -------- */
   const cellSizePx = useCallback((): number => {
     const el = boardRef.current;
     if (!el) return 40;
@@ -306,7 +301,6 @@ function MatchInner() {
     if (busy || status !== 'playing') return;
     const cell = board[pos.row]?.[pos.col];
     if (!cell) return;
-    // special tile: tap triggers
     if (isSpecial(cell.type)) {
       setBusy(true);
       (async () => {
@@ -344,7 +338,6 @@ function MatchInner() {
 
   const onBoardPointerUp = () => {
     if (dragFrom && !dragCommittedRef.current) {
-      // treat as a tap: select / pair-tap fallback
       const pos = dragFrom;
       setDragFrom(null);
       dragStartPx.current = null;
@@ -445,6 +438,7 @@ function MatchInner() {
           reward={reward}
           message={resultMessage}
           stars={resultStars}
+          starThresholds={level.stars}
           hasNextLevel={levelId < MATCH_MAX_LEVEL_V2}
           onNext={levelId < MATCH_MAX_LEVEL_V2 ? goNext : undefined}
           onRetry={reset}
